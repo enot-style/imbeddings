@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+SERVICE_VERION = "0.1.0"
+
 
 def _get_env_int(name: str, default: int) -> int:
     value = os.getenv(name)
@@ -36,8 +38,6 @@ class Settings:
     max_image_height: int
     max_image_bytes: int
     remote_image_request_timeout_seconds: float
-    app_host: str
-    app_port: int
     service_version: str
 
 
@@ -55,9 +55,7 @@ settings = Settings(
         "IMBEDDINGS_REMOTE_IMAGE_REQUEST_TIMEOUT",
         10.0,
     ),
-    app_host=os.getenv("IMBEDDINGS_HOST", "0.0.0.0"),
-    app_port=_get_env_int("IMBEDDINGS_PORT", 8000),
-    service_version=os.getenv("IMBEDDINGS_VERSION", "0.1.0"),
+    service_version=SERVICE_VERION,
 )
 
 if settings.max_loaded_models < 1:

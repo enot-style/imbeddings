@@ -222,9 +222,8 @@ services:
     image: imbeddings
     environment:
       HF_TOKEN: ${HF_TOKEN:?HF_TOKEN is required}
-      IMBEDDINGS_PORT: ${IMBEDDINGS_PORT:-8000}
     ports:
-      - "${IMBEDDINGS_PORT:-8000}:${IMBEDDINGS_PORT:-8000}"
+      - "${UVICORN_PORT:-8000}:${UVICORN_PORT:-8000}"
     volumes:
       - hf_cache:/root/.cache/huggingface
 
