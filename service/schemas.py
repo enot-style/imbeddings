@@ -1,45 +1,51 @@
-from typing import List, Optional, Literal
+from typing import List, Optional, Union, Literal
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, StrictStr, field_validator
 
 
-class EmbeddingInputItem(BaseModel):
-    type: Literal["image"] = Field("image", description="Input type")
-    image_base64: Optional[str] = Field(
-        None,
-        description="Base64 image data or data URI",
-    )
-    image_url: Optional[str] = Field(
-        None,
-        description="HTTP(S) URL to an image",
-    )
-
-    @model_validator(mode="after")
-    def _ensure_single_source(self):
-        if bool(self.image_base64) == bool(self.image_url):
-            raise ValueError("Provide exactly one of image_base64 or image_url")
-        return self
+EmbeddingInput = Union[
+    StrictStr,
+    List[StrictStr],
+]
 
 
 class EmbeddingRequest(BaseModel):
-    input: List[EmbeddingInputItem] = Field(..., description="List of image inputs")
+    input: EmbeddingInput = Field(
+        ...,
+        description="Input image(s) as URL or base64 string(s)",
+    )
     model: str = Field(..., description="Model ID", min_length=1)
+    encoding_format: Optional[Literal["float", "base64"]] = Field(
+        "float",
+        description="Return format for embeddings",
+    )
+    dimensions: Optional[int] = Field(
+        None,
+        description="Optional embedding size override (truncation)",
+        gt=0,
+    )
+    user: Optional[str] = Field(
+        None,
+        description="End-user identifier (passed through)",
+    )
 
-
-class EmbeddingVectors(BaseModel):
-    cls: List[float]
-    mean: List[float]
+    @field_validator("encoding_format", mode="before")
+    @classmethod
+    def _coerce_encoding_format(cls, value):
+        if value in (None, ""):
+            return "float"
+        return value
 
 
 class EmbeddingItem(BaseModel):
     object: str = "embedding"
     index: int
-    embeddings: EmbeddingVectors
+    embedding: Union[List[float], str]
 
 
 class Usage(BaseModel):
-    input_images: int
-    embedding_dim: int
+    prompt_tokens: int
+    total_tokens: int
 
 
 class EmbeddingResponse(BaseModel):

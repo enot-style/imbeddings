@@ -24,16 +24,14 @@ Common use cases include:
 
 ## What Imbeddings does
 
-For each input image, Imbeddings produces **two embeddings**:
+For each input image, Imbeddings produces a **single embedding**:
 
 * **CLS embedding** — global image representation from the CLS token
-* **MEAN embedding** — mean-pooled representation of image patch tokens
 
-Both embeddings:
+The embedding is:
 
-* come from the same model
-* live in the same vector space
-* are **L2-normalized** by default
+* derived from the same model outputs
+* **L2-normalized** by default
 
 ## What Imbeddings does *not* do
 
@@ -51,8 +49,8 @@ Imbeddings **only supports Vision Transformer (ViT)–based models** that expose
 
 ```
 last_hidden_state = [ CLS | PATCH_1 | PATCH_2 | ... | PATCH_N ]
-                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^                              
-                       MEAN: mean over tokens 1..N (CLS excluded)
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                       EMB: CLS token representation
 ```
 
 See `supported_models.txt` in the repo root for the full list of supported models.
@@ -68,8 +66,7 @@ The model must be published on the [Hugging Face Hub](https://huggingface.co/mod
 
 ### Design implications
 
-* CLS and MEAN are **distinct and complementary**
-* MEAN pooling is **patch-only** (CLS is never included)
+* Embeddings are derived from the CLS token
 * All supported models behave identically at the tensor level
 * No conditional logic or token filtering is performed by design
 
@@ -91,22 +88,25 @@ All embeddings are **L2-normalized by default**.
 
 Normalization:
 
-* is applied independently to CLS and MEAN vectors
+* is applied to the CLS vector
 * cannot be disabled in the current API
 
 This ensures embeddings are immediately usable for cosine or dot-product similarity and most vector databases.
 
 ## Requirements & Deployment
 
-> ⚠️ **Security & production readiness notice**
->
-> Imbeddings is currently provided as a **development tool**. It is **not production-ready** out of the box.
->
-> In particular:
-> - No authentication or authorization is implemented
-> - API documentation endpoints (`/docs`, `/redoc`, `/openapi.json`) are publicly exposed
-> - No rate limiting or abuse protection is enabled
-> - No explicit security hardening or penetration testing has been performed
+### Before Publishing
+
+Make sure you have, at minimum:
+- an API gateway or reverse proxy with TLS termination
+- an external auth/authorization service
+- rate limiting and abuse protection
+- basic monitoring (logs + metrics + alerts)
+
+### Authentication (optional)
+
+Set `IMBEDDINGS_API_KEYS` to a comma/space-separated list of API keys to require
+`Authorization: Bearer <key>` on `POST /v1/embeddings`. Leave it empty to disable auth.
 
 ### Hugging Face access token
 
@@ -279,17 +279,13 @@ source .env && uvicorn service.main:app --host=$IMBEDDINGS_HOST --port=$IMBEDDIN
 
 See `systemd_howto.md` to get detailed instructions on how to run imbeddings as a linux service.
 
-## API documentation
+## API schema
 
-FastAPI automatically exposes:
-
-* `GET /docs` — Swagger UI
-* `GET /redoc` — ReDoc
-* `GET /openapi.json` — OpenAPI schema
+* `GET /schema.json` — OpenAPI schema
 
 ### API compatibility and design goals
 
-The Imbeddings API is intentionally designed to be **as close as possible to the OpenAI embeddings API**, while supporting image inputs and multiple embedding types.
+The Imbeddings API is intentionally designed to be **as close as possible to the OpenAI embeddings API**, while supporting image inputs.
 
 Specifically:
 - Request and response shapes follow OpenAI conventions (`model`, `data`, `usage`)

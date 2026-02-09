@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Literal
 
 import torch
 from PIL import Image
@@ -11,18 +11,23 @@ def embed_images(
     model,
     device,
     normalize: bool = True,
-) -> Tuple[List[List[float]], List[List[float]]]:
+    pooling: Literal["cls", "mean"] = "cls",
+) -> List[List[float]]:
     inputs = processor(images=images, return_tensors="pt")
     inputs = {key: value.to(device) for key, value in inputs.items()}
 
     outputs = model(**inputs)
     hidden = outputs.last_hidden_state  # (batch, tokens, dim)
 
-    cls_vecs = hidden[:, 0, :]
-    mean_vecs = hidden[:, 1:, :].mean(dim=1)
+    if pooling == "mean":
+        if hidden.shape[1] > 1:
+            vecs = hidden[:, 1:, :].mean(dim=1)
+        else:
+            vecs = hidden[:, 0, :]
+    else:
+        vecs = hidden[:, 0, :]
 
     if normalize:
-        cls_vecs = torch.nn.functional.normalize(cls_vecs, p=2, dim=1)
-        mean_vecs = torch.nn.functional.normalize(mean_vecs, p=2, dim=1)
+        vecs = torch.nn.functional.normalize(vecs, p=2, dim=1)
 
-    return cls_vecs.cpu().tolist(), mean_vecs.cpu().tolist()
+    return vecs.cpu().tolist()

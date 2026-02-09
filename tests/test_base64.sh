@@ -17,13 +17,13 @@ if [[ ! -f "$image_path" ]]; then
 fi
 if [[ -f "$image_path" ]]; then
   base64_data=$(base64 -i "$image_path" | tr -d '\n')
-  curl -sS "$SERVICE_URL/v1/embeddings" \
-    -H "Content-Type: application/json" \
-    -d @- <<JSON
+curl -sS "$SERVICE_URL/v1/embeddings" \
+  -H "Content-Type: application/json" \
+  -d @- <<JSON
 {
   "model": "$MODEL_ID",
   "input": [
-    { "type": "image", "image_base64": "$base64_data" }
+    "$base64_data"
   ]
 }
 JSON

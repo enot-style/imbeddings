@@ -66,8 +66,8 @@ curl -sS "$SERVICE_URL/v1/embeddings" \
 {
   "model": "$MODEL_ID",
   "input": [
-    { "type": "image", "image_url": "$url_1" },
-    { "type": "image", "image_url": "$url_2" }
+    "$url_1",
+    "$url_2"
   ]
 }
 JSON
