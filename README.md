@@ -1,6 +1,6 @@
 # Imbeddings
 
-**Imbeddings** (image + embeddings) is a lightweight FastAPI microservice that acts as a thin wrapper around **Hugging Face Transformers**, restricted to **image embedding extraction** from Vision Transformer (ViT)–based models such as **DINOv3, DINOv2, and standard ViT backbones**.
+**Imbeddings** (image + embeddings) is a lightweight FastAPI microservice that acts as a thin wrapper around **[Hugging Face Transformers](https://huggingface.co/docs/transformers)**, restricted to **image embedding extraction** from Vision Transformer (ViT)–based models such as **DINOv3, DINOv2, and standard ViT backbones**.
 
 Imbeddings focuses on **image → embedding (vector)** as a primitive. It does not add model-specific logic, post-processing, or task-level abstractions. How the resulting vectors are stored, compared, or used is intentionally outside the scope of this service.
 
@@ -119,15 +119,14 @@ export HF_TOKEN=your_token
 If the token is missing or does not have sufficient access, model loading will fail at startup.
 
 To create a token:
-- Sign in at https://huggingface.co
-- Go to Settings → Access Tokens
+- Sign in at Hugging Face and open the [Access Tokens page](https://huggingface.co/settings/tokens)
 - Create a read-only token
 
 The token is used **exclusively to download model weights**. This requirement is intentional and aligns with Hugging Face’s model access and licensing policies.
 
 ### Hugging Face model access approval
 
-Some models on the Hugging Face Hub are **gated** and require explicit access approval from the model owner (for example, `facebook/dinov3` models).
+Some models on the [Hugging Face Hub](https://huggingface.co/models) are **gated** and require explicit access approval from the model owner (for example, `facebook/dinov3` models).
 
 If a model is gated:
 - you must request access on the model’s Hugging Face page
@@ -170,7 +169,7 @@ IMBEDDINGS_PORT=8000
 Then run:
 
 ```bash
-git clone https://github.com/kotylevskiy/imbeddings.git
+git clone https://github.com/enot-style/imbeddings.git
 cd imbeddings
 docker compose up -d
 ```
@@ -228,7 +227,7 @@ Install supported python version using your package manager.
 Clone the repo and create virtual environment:
 
 ```bash
-git clone https://github.com/kotylevskiy/imbeddings.git
+git clone https://github.com/enot-style/imbeddings.git
 cd imbeddings
 python3.12 -m venv .venv
 source .venv/bin/activate
@@ -292,6 +291,10 @@ Specifically:
 - Embeddings are returned as plain float arrays
 - Responses are deterministic and stateless
 - Batching semantics match OpenAI-style indexing and ordering
+
+## SDKs
+
+* Go SDK: https://github.com/enot-style/imbeddings-go-sdk
 
 ## Examples
 
